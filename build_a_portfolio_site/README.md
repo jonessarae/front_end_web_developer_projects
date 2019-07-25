@@ -5,4 +5,9 @@
 
 ## Acknowledgements
 
-Used http://bgpatterns.com/ for creating my background and https://www.canva.com/ for designing my logo. 
+Used http://bgpatterns.com/ (no longer available) for creating my background and https://www.canva.com/ for designing my logo. 
+
+## Suggestions from Code Review
+
+* Save commonly used attributes as a variable.
+* Save media queries as separate files. 
