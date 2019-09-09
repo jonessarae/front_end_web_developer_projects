@@ -1,11 +1,20 @@
 /************** Set Variables For Game ***************/
 
 const restartButton = document.querySelector('.restart');
+const replayButton = document.querySelector('.replay-button');
 const movesCounter = document.querySelector('.moves');
-const modal = document.querySelector('.modal');
-const timerHours = document.querySelector('#timer .hours');
-const timerMins = document.querySelector('#timer .minutes');
-const timerSeconds = document.querySelector('#timer .seconds');
+const winMoves = document.querySelector('.win-body .moves');
+const modal = document.querySelector('.win');
+const container = document.querySelector('.container');
+const timerHours = document.querySelector('.timer .hours');
+const timerMinutes = document.querySelector('.timer .minutes');
+const timerSeconds = document.querySelector('.timer .seconds');
+const winTimerHours = document.querySelector('.win-body .hours');
+const winTimerMinutes = document.querySelector('.win-body .minutes');
+const winTimerSeconds = document.querySelector('.win-body .seconds');
+const secondStar = document.querySelector('#second-star');
+const thirdStar = document.querySelector('#third-star');
+const finalRating = document.querySelector('.final-rating');
 
 // Get deck
 const deck = document.querySelector('.deck');
@@ -16,6 +25,12 @@ let cardSymbols = ['fa-diamond', 'fa-paper-plane-o', 'fa-anchor', 'fa-bolt',
      'fa-cube', 'fa-anchor', 'fa-leaf', 'fa-bicycle', 'fa-diamond', 'fa-bomb',
      'fa-leaf', 'fa-bomb', 'fa-bolt', 'fa-bicycle', 'fa-paper-plane-o',
      'fa-cube'];
+
+// string of empty star symbol
+const emptyStar = 'fa-star-o';
+
+// string of full star symbol
+const fullStar = 'fa-star';
 
 // list of "opened" cards
 let openCards = [];
@@ -30,16 +45,20 @@ let matches = 0;
 let gameOn = false;
 
 // time elapsed since start of game
-let totalSeconds = 0;
+let elapsedSeconds = 0;
 let sec = 0;
 let min = 0;
 let hour = 0;
 
+// set star rating to 3
+let starRating = 3;
+
 /*************** Functions ***************/
 
-// Reset deck function
-function resetDeck() {
-
+/**
+* @description Resets board
+*/
+function resetBoard() {
   // set list of "opened" cards to empty
   openCards = [];
 
@@ -64,7 +83,11 @@ function resetDeck() {
   });
 }
 
-// Shuffle function from http://stackoverflow.com/a/2450976
+/**
+* @description Shuffle function from http://stackoverflow.com/a/2450976
+* @param {array} array
+* @returns {array} array
+*/
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -75,61 +98,76 @@ function shuffle(array) {
         array[currentIndex] = array[randomIndex];
         array[randomIndex] = temporaryValue;
     }
-
     return array;
 }
 
-// Open card function
+/**
+* @description Shows card that user clicked on and checks for matches
+* @param {event} event
+*/
 function openCard(event) {
-
-  // start timer
+  // start timer if not already started
   startTimer();
 
   // get target of event
-  let target = event.target;
+  let targetCard = event.target;
 
-
-  // if target is not in openCards
-  if (!openCards.includes(target)) {
+  // if target is not in openCards and has "card" class
+  if (!openCards.includes(targetCard) && targetCard.classList.contains('card')) {
     // show card
-    target.classList.add('open', 'show');
+    targetCard.classList.add('open', 'show');
     // check if card is already a match
-    if (!target.classList.contains('match')) {
+    if (!targetCard.classList.contains('match')) {
       // if card is not part of match pair, add card to openCards
-      openCards.push(target);
+      openCards.push(targetCard);
     }
   }
 
   if (openCards.length === 2) {
     // check for match
-    isMatch();
+    checkMatch();
   }
-
-
 }
 
-// Close card function
+/**
+* @description Closes card by removing classes "open" and "show". Also removes
+* "not-match" class
+* @param {DOM element} card
+* @returns {DOM element} card
+*/
 function closeCard(card) {
-  // remove classes "open" and "show" and "unmatch" from card
-  card.classList.remove('open','show','unmatch');
-}
-
-// Add match class function
-function matchCard(card) {
-  // add class "match" to card
-  card.classList.add('match');
-}
-
-// Add not match function
-function notMatch(card) {
-  // add class "unmatch" to card
-  card.classList.add('unmatch');
+  // remove classes "open" and "show" and "not-match" from card
+  card.classList.remove('open','show','not-match');
   return card;
 }
 
-// Match card function
-function isMatch() {
+/**
+* @description Add "match" class if two cards match
+* @param {DOM element} card
+* @returns {DOM element} card
+*/
+function matchCard(card) {
+  // add class "match" to card
+  card.classList.add('match');
+  return card;
+}
 
+/**
+* @description Add "not-match" class if two cards don't match
+* @param {DOM element} card
+* @returns {DOM element} card
+*/
+function notmatchCard(card) {
+  // add class "unmatch" to card
+  card.classList.add('not-match');
+  return card;
+}
+
+/**
+* @description Checks if two cards are a match, makes changes to score panel,
+* and tracks number of matches
+*/
+function checkMatch() {
   // set first and second card of pair
   let firstCard = openCards[0];
   let secondCard = openCards[1];
@@ -145,10 +183,10 @@ function isMatch() {
         matchCard(firstCard);
         matchCard(secondCard);
   } else {
-    // show unmatch animation
-    firstCard = notMatch(firstCard);
-    secondCard = notMatch(secondCard);
-    // close cards with delay
+    // show not-match animation
+    firstCard = notmatchCard(firstCard);
+    secondCard = notmatchCard(secondCard);
+    // close cards with delay of 1 second
     setTimeout(function() {
       closeCard(firstCard);
       closeCard(secondCard);
@@ -157,26 +195,36 @@ function isMatch() {
 
   // increment number of moves
   addMove();
+  // determine star rating
+  setRating(moves);
   // set openCards to empty
   openCards = [];
   // check if player matched all 8 pairs
-  isWin();
+  isWin(matches);
 }
 
-// increment number of matches
+/**
+* @description Increments number of matches
+*/
 function addMatch() {
   matches++;
 }
 
-// increment number of moves
+/*
+* @description Increments number of moves and updates HTML element
+*/
 function addMove() {
    moves++;
    // update number of moves in html
-   movesCount.textContent = moves;
+   movesCounter.textContent = moves;
 }
 
-// check if player has all matched pairs and end game
-function isWin() {
+/**
+* @description Check if player has all matched pairs and end game
+* @param {number} matches
+*/
+function isWin(matches) {
+  //total number of matched pairs possible in game is 8
   if (matches === 8) {
     // stop timer
     stopTimer();
@@ -185,35 +233,57 @@ function isWin() {
   }
 }
 
-// reset scores funciton
-function resetScorePanel() {
+/**
+* @description Set star rating based on number of moves
+* @param {number} moves
+*/
+function setRating(moves) {
+  if (moves > 15 && moves <= 31) {
+    thirdStar.children[0].classList.remove(thirdStar.children[0].classList[1]);
+    thirdStar.children[0].classList.add(emptyStar);
+    starRating = 2;
+  } else if (moves > 31) {
+    secondStar.children[0].classList.remove(secondStar.children[0].classList[1]);
+    secondStar.children[0].classList.add(emptyStar);
+    starRating = 1;
+  }
+}
 
-  // reset moves
+/**
+* @description Resets score panel
+*/
+function resetScorePanel() {
+  // reset moves and update HTML element
   moves = 0;
   movesCounter.textContent = moves;
 
   // reset matches
   matches = 0;
 
-  // reset time
-
-  // reset rating
-  rating = 3;
-  //stars.forEach(star )
-
-  // stop timer
-  stopTimer();
-
+  // reset stars
+  secondStar.children[0].classList.remove(secondStar.children[0].classList[1]);
+  secondStar.children[0].classList.add(fullStar);
+  thirdStar.children[0].classList.remove(thirdStar.children[0].classList[1]);
+  thirdStar.children[0].classList.add(fullStar);
 }
-// restart/play game function
-function restartGame() {
+
+/**
+* @description restart/play game
+*/
+function startGame() {
+  // close win modal if open
+  closeModal();
   // reset deck
-  resetDeck();
+  resetBoard();
   // reset score panel
   resetScorePanel();
+  // reset timer
+  resetTimer();
 }
 
-// start timer function
+/**
+* @description start timer
+*/
 function startTimer() {
   if (!gameOn) {
     // set to true when game is started
@@ -223,7 +293,9 @@ function startTimer() {
   }
 }
 
-// stop timer function
+/**
+* @description Stop timer
+*/
 function stopTimer() {
     // set to false when game has finished
     gameOn = false;
@@ -231,27 +303,76 @@ function stopTimer() {
     clearInterval(timer);
 }
 
-// game timer function
+/**
+* @description Format timer based on elapsedSeconds
+*/
 function gameTimer() {
-  totalSeconds++;
-  min = pad(Math.floor(totalSeconds/60));
-  console.log(min);
-  timerMins.textContent = min;
-  sec = pad(totalSeconds%60);
+  // increment elapsedSeconds
+  elapsedSeconds++;
+  // get minutes
+  min = pad(Math.floor(elapsedSeconds/60));
+  // update HTML element for minutes
+  timerMinutes.textContent = min;
+  // get seconds
+  sec = pad(elapsedSeconds%60);
+  // update HTML element for seconds
   timerSeconds.textContent = sec;
+  // get hour
   hour = pad(Math.floor(min/60));
+  // update HTML element for hours
   timerHours.textContent = hour;
 }
 
-// pad number function
+/**
+* @description Pad timer elements with 0
+* @param {number} n
+*/
 function pad(n) {
-  // add 0 to number if less than 10
+  // add prefix 0 to number if less than 10
   return (n < 10 ? '0' : '') + n;
 }
 
-// close modal pop-up function
+/**
+* @description Reset timer
+*/
+function resetTimer() {
+  if (gameOn) {
+    // stop time
+    stopTimer();
+  }
+  // reset variables to 0
+  elapsedSeconds = 0;
+  timerSeconds.textContent = '00';
+  timerMinutes.textContent = '00';
+  timerHours.textContent = '00';
+}
+
+/**
+* @description open win modal when game is won
+*/
+function openModal() {
+  // set final moves in HTML
+  winMoves.textContent = moves;
+  // set final time in HTML
+  winTimerMinutes.textContent = min;
+  winTimerSeconds.textContent = sec;
+  winTimerHours.textContent = hour;
+  // set final star rating in HTML
+  finalRating.textContent = starRating;
+  // hide game
+  container.style.display = 'none';
+  // show win modal
+  modal.style.display ='block';
+}
+
+/**
+* @description close win modal during play
+*/
 function closeModal() {
-    modal.style.display = 'none';
+  // hide win modal
+  modal.style.display = 'none';
+  // show game
+  container.style.display = 'flex';
 }
 
 /*************** Event Listeners ***************/
@@ -260,7 +381,10 @@ function closeModal() {
 deck.addEventListener('click', openCard);
 
 //Click attached to restart button, will restart game
-restartButton.addEventListener('click', restartGame);
+restartButton.addEventListener('click', startGame);
+
+//Click attached to replay button, will restart game
+replayButton.addEventListener('click', startGame);
 
 /*********** Run Game ***************/
-restartGame();
+startGame();
