@@ -2,7 +2,7 @@
 
 ## Project 1: Build a Portfolio Site
 
-All files are in 
+All files are in *build_a_portfolio_site*.
 
 ## Project 2: Memory Game
 
