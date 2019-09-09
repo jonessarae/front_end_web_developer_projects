@@ -200,6 +200,7 @@ h1 {
     width: 100%;
     text-align: center;
     font-family: 'Open Sans', sans-serif;
+    padding-top: 100px;
 }
 
 .win-header {
@@ -227,11 +228,11 @@ h1 {
 @media screen and (max-width: 650px){
   .deck {
     width: 85%;
-    height: 90vh;
+    min-height: 70vh;
   }
   .deck .card {
     width: 23%;
-    height: 20vh;
+    height: 14vh;
   }
 }
 
