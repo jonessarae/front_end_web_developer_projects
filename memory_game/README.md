@@ -1,10 +1,14 @@
 # Project 2: Memory Game
 
-<img src="https://github.com/jonessarae/front_end_web_developer_projects/blob/master/memory_game/match_game.png" width="400" >
-
 ## Description
 
 A browser-based card matching game.
+
+<img src="https://github.com/jonessarae/front_end_web_developer_projects/blob/master/memory_game/match_game.png" width="400" >
+
+## How to Install
+
+Download the project and view *index.html* in your chosen browser.
 
 ## How the Game Works
 
