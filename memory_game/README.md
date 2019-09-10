@@ -21,3 +21,7 @@ Each turn:
 * If the cards match, both cards stay flipped over.
 * If the cards do not match, both cards are flipped face down.
 * The game ends once all cards have been correctly matched.
+
+## Code Review
+
+Reviewer suggested use of "use strict;" tag in javascript files. This tag forces you to write better code by preventing functions with bad syntax from declaring a variable before using it.
